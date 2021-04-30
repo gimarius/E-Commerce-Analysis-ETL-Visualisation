@@ -1,0 +1,163 @@
+zz <- file("error_log.text", open="wt")
+sink(zz, type="message")
+
+library("rvest")
+library("tidyverse")
+
+url <- read.csv('URL.csv', header=TRUE, sep=";")
+url <- as.data.frame(url)
+
+data_csv <- read.csv('Output_data_test.csv', header=TRUE, sep=',')
+data_csv <- as.data.frame(data_csv)
+
+
+counter = 1
+x_m <- rep(NA,nrow(data_csv)-2)
+
+
+print("Start Microspot")
+
+Sys.sleep(2)
+
+
+for (i in url[1:1,2:6]){
+  price_01 <- i %>%
+    read_html() %>%
+    html_node(xpath = '//*[@id="container-productdetailPrice"]')%>%
+    html_text()
+  price_01 <- gsub("CHF", '', price_01)
+  price_01 <- gsub("'", '', price_01)
+  price_01 <- gsub(".–", '', price_01)
+  #price_01 <- as.numeric(price_01)
+  print(price_01)
+  
+  x_m[counter] <- price_01
+  counter = counter + 1
+  Sys.sleep(1)
+}
+
+
+data_microspot <- data.frame(t(x_m))
+
+time <- as.character(Sys.time())
+vendor <- "Microspot"
+
+data_microspot <- data.frame(Timeframe = rep(time, nrow(data_microspot)), data_microspot[,])
+data_microspot <- data.frame(Vendor = rep(vendor, nrow(data_microspot)), data_microspot[,])
+names(data_microspot) <- names(data_csv)
+data_csv <- rbind(data_csv,data_microspot)
+
+
+
+print("Start digitec")
+
+
+counter = 1
+
+x_d <- rep(NA,nrow(data_csv)-2)
+
+for (i in url[2:2,2:6]){
+  price_02 <- i %>%
+    read_html() %>%
+    html_node(xpath = '/html/body/div/div/div[2]/div[1]/main/div/div[2]/div/div[2]/div/div[1]/strong')%>%
+    html_text()
+  price_02 <- gsub("CHF", '', price_02)
+  price_02 <- gsub(".–", '', price_02)
+  price_02 <- gsub(" ", '', price_02)
+  #price_02 <- as.numeric(price_02)
+  x_d[counter] <- price_02
+  counter = counter + 1
+  print(price_02)
+  Sys.sleep(2)
+}
+
+
+data_digitec <- data.frame(t(x_d))
+
+time <- as.character(Sys.time())
+vendor <- "digitec"
+
+data_digitec <- data.frame(Timeframe = rep(time, nrow(data_digitec)), data_digitec[,])
+data_digitec <- data.frame(Vendor = rep(vendor, nrow(data_digitec)), data_digitec[,])
+names(data_digitec) <- names(data_csv)
+data_csv <- rbind(data_csv,data_digitec)
+
+
+print("Start interdiscount")
+
+counter = 1
+x_i <- rep(NA,nrow(data_csv)-2)
+
+for (i in url[3:3,2:6]){
+  price_03 <- i %>%
+    read_html() %>%
+    html_node("._3H04_H") %>%
+    html_text()
+  price_03 <- gsub("CHF", '', price_03)
+  price_03 <- gsub("'", '', price_03)
+  price_03 <- gsub(".-", '0', price_03)
+  #price_03 <- as.numeric(price_03)
+  x_i[counter] <- price_03
+  counter = counter + 1
+  print(price_03)
+  Sys.sleep(2)
+}
+
+data_interdiscount <- data.frame(t(x_i))
+time <- as.character(Sys.time())
+vendor <- "interdiscount"
+
+
+data_interdiscount <- data.frame(Timeframe = rep(time, nrow(data_interdiscount)), data_interdiscount[,])
+data_interdiscount <- data.frame(Vendor = rep(vendor, nrow(data_interdiscount)), data_interdiscount[,])
+names(data_interdiscount) <- names(data_csv)
+data_csv <- rbind(data_csv,data_interdiscount)
+
+print("Start brack")
+
+
+counter = 1
+x_b <- rep(NA,5)
+for (i in url[4:4,2:6]){
+  price_03 <- i %>%
+    read_html() %>%
+    html_node(xpath = '/html/body/article/div[2]/div/div/div[2]/form/div[1]/div[4]/div/div[4]/p/span/em')%>%
+    html_text()
+  
+  if (is.na(price_03) == TRUE) {
+    price_03 <- i %>%
+      read_html() %>%
+      html_node(xpath = '//*[@id="AddToCartForm"]/div[1]/div[3]/div/div[5]/p/span/em')%>%
+      html_text()
+  }
+  
+  price_03 <- gsub("CHF", '', price_03)
+  price_03 <- gsub("'", '', price_03)
+  price_03 <- gsub(".-", '0', price_03)
+  #price_03 <- as.numeric(price_03)
+  print(price_03)
+  x_b[counter] <- price_03
+  counter = counter + 1
+  Sys.sleep(2)
+}
+data_brack <- data.frame(t(x_b))
+time <- as.character(Sys.time())
+vendor <- "brack"
+data_brack <- data.frame(Timeframe = rep(time, nrow(data_brack)), data_brack[,])
+data_brack <- data.frame(Vendor = rep(vendor, nrow(data_brack)), data_brack[,])
+names(data_brack) <- names(data_csv)
+data_csv <- rbind(data_csv,data_brack)
+
+print("all done")
+
+write.csv(data_csv,'Output_data_test.csv', row.names =FALSE)
+
+
+message(getwd())
+for(i in 1:100) {
+  cat(".")
+}
+message("\nBye.")
+
+sink(type="message") 
+close(zz)
