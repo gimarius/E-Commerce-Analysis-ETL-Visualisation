@@ -20,6 +20,8 @@ Price Analysis for a selected portfolio of offered products in 4 Swiss Online Re
 
 Open the PPT to see the presentation of the results 
 
+Author: Marius Gisler
+
 
 Project at Lucerne University of Applied Sciences and Arts in Master of Science in Applied Information and Data Science
 
